@@ -9,6 +9,7 @@ import { AdminModule } from './admin/admin.module';
 import { WhmanModule } from './whman/whman.module';
 import { ClinicPublicModule } from './clinic-public/clinicPublic.module';
 import { PatientModule } from './patient/patient.module';
+import { WhModule } from './wh/wh.module';
 
 @Module({
   imports: [
@@ -19,11 +20,10 @@ import { PatientModule } from './patient/patient.module';
     AuthModule,
     DoctorsModule,
     ProductModule,
-    ConfigModule.forRoot()
+    WhModule,
+    ConfigModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
-  // ksjdhnfkjhfewrerfgfhfh
-  
 })
-export class AppModule {} 
+export class AppModule {}

@@ -8,9 +8,9 @@ export class WhService {
     return whs.rows;
   }
   async addWh(name, address) {
-    const products = await pool.query(
+    const wh = await pool.query(
       `INSERT INTO whs(name,address) VALUES ('${name}', '${address}')`,
     );
-    return products;
+    return wh;
   }
 }

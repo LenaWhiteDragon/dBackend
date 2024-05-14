@@ -10,6 +10,7 @@ import { WhmanModule } from './whman/whman.module';
 import { ClinicPublicModule } from './clinic-public/clinicPublic.module';
 import { PatientModule } from './patient/patient.module';
 import { WhModule } from './wh/wh.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WhModule } from './wh/wh.module';
     DoctorsModule,
     ProductModule,
     WhModule,
+    CategoryModule,
     ConfigModule.forRoot(),
   ],
   controllers: [AppController],

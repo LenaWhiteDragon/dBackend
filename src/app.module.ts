@@ -11,6 +11,7 @@ import { ClinicPublicModule } from './clinic-public/clinicPublic.module';
 import { PatientModule } from './patient/patient.module';
 import { WhModule } from './wh/wh.module';
 import { CategoryModule } from './category/category.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CategoryModule } from './category/category.module';
     ProductModule,
     WhModule,
     CategoryModule,
+    OrderModule,
     ConfigModule.forRoot(),
   ],
   controllers: [AppController],

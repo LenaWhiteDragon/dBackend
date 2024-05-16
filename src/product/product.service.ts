@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import pool from 'src/db';
+import { Product } from './product.controller';
 
 @Injectable()
 export class ProductService {
@@ -69,14 +70,31 @@ export class ProductService {
     // const clinics = await pool.query("Select * From policlinics Where id_policlinics in (select policlinic_id from policlinic_products where products_id =" + filter + ")")
     if (products.rows.length === 0)
       throw new NotFoundException('Оборудование не найдено.');
-    //const token = jwtTokens(users.rows[0]);
-    // return users.rows[0];
-    // const token = jwtTokens(users.rows[0]);
-    // console.log(token);
     const products_new = products.rows;
     return products_new;
     //console.log(token);
     // return res.json({ token: `Bearer ${token}` });
+  }
+  async orderProduct(product: Product) {
+    const { id_product, number, id_user } = product;
+    const numberProduct = await pool.query(
+      `SELECT number FROM products WHERE id_product=${id_product}`,
+    );
+    const countWhs = await pool.query(`SELECT COUNT(id_wh) FROM whs`);
+    let newNumber = numberProduct.rows[0].number.map(
+      (el, index) => el - number[index],
+    );
+    const newWhsAmount = countWhs.rows[0].count - newNumber.length; // if there are new whs then add zeros
+    if (newWhsAmount > 0) {
+      for (let i = 0; i <= newWhsAmount - 1; i++) newNumber.push(0);
+    }
+    const updateNumber = await pool.query(
+      `UPDATE products SET number='{${newNumber}}' WHERE id_product=${id_product}`,
+    );
+    const responseProduct = await pool.query(
+      `INSERT INTO orders(id_product, order_number, user_id, date) 
+      VALUES ('${id_product}', '{${number}}', '${id_user}', to_timestamp(${Date.now()} / 1000.0))`,
+    );
   }
 }
 

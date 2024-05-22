@@ -15,11 +15,9 @@ export class OrderService {
 
     return orders.rows;
   }
-  async changeOrderCompletedStatus(order: Order) {
-    const { id_order, is_completed } = order;
-
-    const updateOrder = await pool.query(
-      `UPDATE orders SET is_completed='{${is_completed}}' WHERE id_order=${id_order}`,
+  async changeOrderCompletedStatus(orderId: number, isCompleted: boolean) {
+    return await pool.query(
+      `UPDATE orders SET is_completed='${isCompleted}' WHERE id_order=${orderId} RETURNING *`,
     );
   }
 }

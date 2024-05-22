@@ -18,6 +18,7 @@ export interface Order {
   date: string;
   is_completed: boolean;
 }
+export type OrderStatus = Pick<Order, 'id_order' | 'is_completed'>;
 
 @Controller('order')
 export class OrderController {
@@ -30,10 +31,11 @@ export class OrderController {
     return data;
   }
 
-  @Put('/')
-  async changeOrderCompletedStatus(@Body() order: Order) {
-    const data = await this.orderService.changeOrderCompletedStatus(order);
-    console.log(data);
-    return data;
+  @Put('/status')
+  async changeOrderCompletedStatus(@Body() orderStatus: OrderStatus) {
+    return await this.orderService.changeOrderCompletedStatus(
+      orderStatus.id_order,
+      orderStatus.is_completed,
+    );
   }
 }

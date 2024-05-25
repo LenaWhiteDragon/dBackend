@@ -23,11 +23,21 @@ export class ProductController {
   constructor(private productService: ProductService) {}
 
   @Get('/')
-  async getProduct(@Query('filter') query) {
+  // async getProduct(@Query('filter') query) {
+  //   const filter = query;
+  //   console.log(filter);
+  //   console.log('Test1');
+  //   const data = await this.productService.getProduct(filter);
+  //   console.log(data);
+  //   return data;
+  // }
+
+  // @Get('/getProductSearch')
+  async getProductSearch(@Query('filter') query) {
     const filter = query;
     console.log(filter);
     console.log('Test1');
-    const data = await this.productService.getProduct(filter);
+    const data = await this.productService.getProductSearch(filter);
     console.log(data);
     return data;
   }

@@ -57,6 +57,59 @@ export class ProductService {
     return productObject;
   }
 
+  async getProductSearch(filter) {
+    //убрано number[] для оптимизации
+    const productsData = await pool.query(
+      `
+    SELECT products.id_product, products.name, products.photo, 
+    products.id_category, categories.name AS c_name,
+    atts.id_att, atts.name AS a_name, atts.type,
+    atts_of_products.var_integer, atts_of_products.var_boolean, atts_of_products.var_real
+        FROM products
+        JOIN atts_of_products ON products.id_product = atts_of_products.id_product
+        JOIN atts ON atts_of_products.id_att = atts.id_att
+        JOIN categories ON products.id_category = categories.id_category
+        WHERE products.name ILIKE $1
+  `,
+      [`%${filter}%`],
+    );
+
+    if (productsData.rows.length === 0) {
+      throw new NotFoundException('Оборудование не найдено');
+    }
+
+    const productsMap = {};
+
+    productsData.rows.forEach((row) => {
+      if (!productsMap[row.id_product]) {
+        productsMap[row.id_product] = {
+          id: row.id_product,
+          name: row.name,
+          photo: row.photo,
+          category: {
+            id: row.id_category,
+            name: row.c_name,
+          },
+          atts: [],
+        };
+      }
+
+      productsMap[row.id_product].atts.push({
+        id: row.id_att,
+        name: row.a_name,
+        type: row.type,
+        var_integer: row.var_integer,
+        var_boolean: row.var_boolean,
+        var_real: row.var_real,
+      });
+    });
+
+    const productsArray = Object.values(productsMap);
+
+    console.log(productsArray);
+    return productsArray;
+  }
+
   async getProductByCategories(id, filter) {
     //return [{id: 1, name: "Mikhail"}, {id: 2, name: "nicolai"}, {id: 3, name: "ffff"}]
     const products = await pool.query(

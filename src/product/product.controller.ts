@@ -23,22 +23,15 @@ export class ProductController {
   constructor(private productService: ProductService) {}
 
   @Get('/')
-  // async getProduct(@Query('filter') query) {
-  //   const filter = query;
-  //   console.log(filter);
-  //   console.log('Test1');
-  //   const data = await this.productService.getProduct(filter);
-  //   console.log(data);
-  //   return data;
-  // }
-
-  // @Get('/getProductSearch')
-  async getProductSearch(@Query('filter') query) {
-    const filter = query;
-    console.log(filter);
-    console.log('Test1');
-    const data = await this.productService.getProductSearch(filter);
-    console.log(data);
+  async getProductSearch(
+    @Query('filter') filter: string,
+    @Query('c_id') c_id: number,
+    @Query('searchAttrs') searchAttrs: string,
+    @Query('ranges') ranges: string,
+  ) {
+    const parsedSearchAttrs = JSON.parse(searchAttrs||"{}");
+    const parsedRanges = JSON.parse(ranges||"[]");
+    const data = await this.productService.getProductSearch(filter, c_id, parsedSearchAttrs, parsedRanges);
     return data;
   }
 
@@ -47,14 +40,6 @@ export class ProductController {
     console.log(id);
     console.log('Test2');
     const data = await this.productService.getProductById(id);
-    console.log(data);
-    return data;
-  }
-
-  @Get('/getProductByCategories')
-  async getClinicsByService(@Query('filter') filter, @Query('id') id) {
-    console.log(filter);
-    const data = await this.productService.getProductByCategories(id, filter);
     console.log(data);
     return data;
   }

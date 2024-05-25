@@ -5,24 +5,6 @@ import { Product } from './product.controller';
 @Injectable()
 export class ProductService {
   // constructor(private jwtService: JwtService) {}
-
-  async getProduct(filter) {
-    // return [{id: 1, name: "комп леново"}, {id: 2, name: "мышка элджи"}, {id: 3, name: "монитор асер"}]
-    const products = await pool.query(
-      "SELECT * FROM products WHERE LOWER(name) LIKE LOWER('%" + filter + "%')",
-    );
-    if (products.rows.length === 0)
-      throw new NotFoundException('Оборудование не найдено');
-    //const token = jwtTokens(users.rows[0]);
-    // return users.rows[0];
-    // const token = jwtTokens(users.rows[0]);
-    // console.log(token);
-    const products_new = products.rows;
-    return products_new;
-    //console.log(token);
-    // return res.json({ token: `Bearer ${token}` });
-  }
-
   async getProductById(id) {
     // return [{id: 1, name: "комп леново"}, {id: 2, name: "мышка элджи"}, {id: 3, name: "монитор асер"}]
     const products =
@@ -57,29 +39,52 @@ export class ProductService {
     return productObject;
   }
 
-  async getProductSearch(filter) {
-    //убрано number[] для оптимизации
+  async getProductSearch(filter: string, c_id: number, searchAttrs = {}, ranges = []) {
+    const categoryRequest = c_id ? ` AND categories.id_category = ${c_id}` : '';
+  
+    let searchAttrsRequest = '';
+    if (Object.keys(searchAttrs).length > 0) {
+      for (const [key, value] of Object.entries(searchAttrs)) {
+        if (value !== null && value !== '') {
+          const valueType = typeof value === 'number' ? 'var_integer' : 'var_boolean';
+          searchAttrsRequest += ` AND atts_of_products.id_att = ${key} AND atts_of_products.${valueType} = ${value}`;
+        }
+      }
+    }
+  
+    let rangeRequest = '';
+    ranges.forEach((range) => {
+      const { id_att, minValue, maxValue } = range;
+      if (minValue !== null && maxValue !== null) {
+        rangeRequest += ` AND atts_of_products.id_att = ${id_att} AND (atts_of_products.var_integer BETWEEN ${minValue} AND ${maxValue} OR atts_of_products.var_real BETWEEN ${minValue} AND ${maxValue})`;
+      } else if (minValue !== null) {
+        rangeRequest += ` AND atts_of_products.id_att = ${id_att} AND (atts_of_products.var_integer >= ${minValue} OR atts_of_products.var_real >= ${minValue})`;
+      } else if (maxValue !== null) {
+        rangeRequest += ` AND atts_of_products.id_att = ${id_att} AND (atts_of_products.var_integer <= ${maxValue} OR atts_of_products.var_real <= ${maxValue})`;
+      }
+    });
+  
     const productsData = await pool.query(
       `
-    SELECT products.id_product, products.name, products.photo, 
-    products.id_category, categories.name AS c_name,
-    atts.id_att, atts.name AS a_name, atts.type,
-    atts_of_products.var_integer, atts_of_products.var_boolean, atts_of_products.var_real
-        FROM products
-        JOIN atts_of_products ON products.id_product = atts_of_products.id_product
-        JOIN atts ON atts_of_products.id_att = atts.id_att
-        JOIN categories ON products.id_category = categories.id_category
-        WHERE products.name ILIKE $1
-  `,
+      SELECT products.id_product, products.name, products.photo, 
+             products.id_category, categories.name AS c_name,
+             atts.id_att, atts.name AS a_name, atts.type,
+             atts_of_products.var_integer, atts_of_products.var_boolean, atts_of_products.var_real
+      FROM products
+      JOIN atts_of_products ON products.id_product = atts_of_products.id_product
+      JOIN atts ON atts_of_products.id_att = atts.id_att
+      JOIN categories ON products.id_category = categories.id_category
+      WHERE products.name ILIKE $1 ${categoryRequest} ${searchAttrsRequest} ${rangeRequest}
+    `,
       [`%${filter}%`],
     );
-
+  
     if (productsData.rows.length === 0) {
       throw new NotFoundException('Оборудование не найдено');
     }
-
+  
     const productsMap = {};
-
+  
     productsData.rows.forEach((row) => {
       if (!productsMap[row.id_product]) {
         productsMap[row.id_product] = {
@@ -93,7 +98,7 @@ export class ProductService {
           atts: [],
         };
       }
-
+  
       productsMap[row.id_product].atts.push({
         id: row.id_att,
         name: row.a_name,
@@ -103,31 +108,19 @@ export class ProductService {
         var_real: row.var_real,
       });
     });
-
+  
     const productsArray = Object.values(productsMap);
-
     console.log(productsArray);
     return productsArray;
   }
+  
 
-  async getProductByCategories(id, filter) {
-    //return [{id: 1, name: "Mikhail"}, {id: 2, name: "nicolai"}, {id: 3, name: "ffff"}]
-    const products = await pool.query(
-      "SELECT * FROM products WHERE LOWER(name) LIKE LOWER('%" +
-        filter +
-        "%') AND id_category =" +
-        id +
-        ')',
-    );
 
-    // const clinics = await pool.query("Select * From policlinics Where id_policlinics in (select policlinic_id from policlinic_products where products_id =" + filter + ")")
-    if (products.rows.length === 0)
-      throw new NotFoundException('Оборудование не найдено.');
-    const products_new = products.rows;
-    return products_new;
-    //console.log(token);
-    // return res.json({ token: `Bearer ${token}` });
-  }
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
   async orderProduct(product: Product) {
     const { id_product, number, id_user } = product;
     const numberProduct = await pool.query(

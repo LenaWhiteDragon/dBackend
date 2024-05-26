@@ -5,6 +5,7 @@ import {
   HttpException,
   UseGuards,
   Get,
+  Param,
 } from '@nestjs/common';
 import { CategoryService} from './category.service';
 
@@ -19,6 +20,14 @@ export class CategoryController {
   @Get('/')
   async getCategories() {
     const data = await this.category.getCategories();
+    console.log(data);
+    return data;
+  }
+  @Get('/getCategoriesAtts/:id')
+  async getCategoriesAtts(@Param('id') id) {
+    console.log(id);
+    console.log('Test2');
+    const data = await this.category.getCategoriesAtts(id);
     console.log(data);
     return data;
   }

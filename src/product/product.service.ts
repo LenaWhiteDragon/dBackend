@@ -58,26 +58,26 @@ export class ProductService {
       }
     }
 
-    const rangeRequest = ranges.reduce((accumulator, range, index) => {
-      const { id_att, minValue, maxValue } = range;
-      let condition = ` ${index === 0 ? 'AND' : 'OR'} atts_of_products.id_att = ${id_att}`;
-      if (
-        minValue !== null &&
-        minValue !== undefined &&
-        maxValue !== null &&
-        maxValue !== undefined
-      ) {
-        condition += ` AND (atts_of_products.var_integer BETWEEN ${minValue} AND ${maxValue} OR atts_of_products.var_real BETWEEN ${minValue} AND ${maxValue})`;
-      } else if (minValue !== null && minValue !== undefined) {
-        condition += ` AND (atts_of_products.var_integer >= ${minValue} OR atts_of_products.var_real >= ${minValue})`;
-      } else if (maxValue !== null && maxValue !== undefined) {
-        condition += ` AND (atts_of_products.var_integer <= ${maxValue} OR atts_of_products.var_real <= ${maxValue})`;
-      }
-      accumulator += condition;
-      return accumulator;
-    }, '');
-
-    console.log(rangeRequest);
+    const rangeRequest = ranges
+      ? ranges.reduce((accumulator, range, index) => {
+          const { id_att, minValue, maxValue } = range;
+          let condition = ` ${index === 0 ? 'AND' : 'OR'} atts_of_products.id_att = ${id_att}`;
+          if (
+            minValue !== null &&
+            minValue !== undefined &&
+            maxValue !== null &&
+            maxValue !== undefined
+          ) {
+            condition += ` AND (atts_of_products.var_integer BETWEEN ${minValue} AND ${maxValue} OR atts_of_products.var_real BETWEEN ${minValue} AND ${maxValue})`;
+          } else if (minValue !== null && minValue !== undefined) {
+            condition += ` AND (atts_of_products.var_integer >= ${minValue} OR atts_of_products.var_real >= ${minValue})`;
+          } else if (maxValue !== null && maxValue !== undefined) {
+            condition += ` AND (atts_of_products.var_integer <= ${maxValue} OR atts_of_products.var_real <= ${maxValue})`;
+          }
+          accumulator += condition;
+          return accumulator;
+        }, '')
+      : '';
 
     const productsData = await pool.query(
       `
@@ -93,16 +93,6 @@ export class ProductService {
     `,
       [`%${filter}%`],
     );
-
-    //     console.log(`SELECT products.id_product, products.name, products.photo,
-    //     products.id_category, categories.name AS c_name,
-    //     atts.id_att, atts.name AS a_name, atts.type,
-    //     atts_of_products.var_integer, atts_of_products.var_boolean, atts_of_products.var_real
-    // FROM products
-    // JOIN atts_of_products ON products.id_product = atts_of_products.id_product
-    // JOIN atts ON atts_of_products.id_att = atts.id_att
-    // JOIN categories ON products.id_category = categories.id_category
-    // WHERE products.name ILIKE %${filter}% ${categoryRequest} ${searchAttrsRequest} ${rangeRequest}`)
 
     if (productsData.rows.length === 0) {
       throw new NotFoundException('Оборудование не найдено');
@@ -137,8 +127,9 @@ export class ProductService {
     const productsArray = Object.values(productsMap);
     const productFilteredByAtts = productsArray.filter((product) => {
       // @ts-ignore
-      return product.atts.length === ranges.length;
+      return ranges.length === 0 || product.atts.length === ranges.length;
     });
+
     return productFilteredByAtts;
   }
 

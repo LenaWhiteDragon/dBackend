@@ -39,31 +39,46 @@ export class ProductService {
     return productObject;
   }
 
-  async getProductSearch(filter: string, c_id: number, searchAttrs = {}, ranges = []) {
+  async getProductSearch(
+    filter: string,
+    c_id: number,
+    searchAttrs = {},
+    ranges = [],
+  ) {
     const categoryRequest = c_id ? ` AND categories.id_category = ${c_id}` : '';
-  
+
     let searchAttrsRequest = '';
     if (Object.keys(searchAttrs).length > 0) {
       for (const [key, value] of Object.entries(searchAttrs)) {
         if (value !== null && value !== '') {
-          const valueType = typeof value === 'number' ? 'var_integer' : 'var_boolean';
+          const valueType =
+            typeof value === 'number' ? 'var_integer' : 'var_boolean';
           searchAttrsRequest += ` AND atts_of_products.id_att = ${key} AND atts_of_products.${valueType} = ${value}`;
         }
       }
     }
-  
-    let rangeRequest = '';
-    ranges.forEach((range) => {
+
+    const rangeRequest = ranges.reduce((accumulator, range, index) => {
       const { id_att, minValue, maxValue } = range;
-      if (minValue !== null && maxValue !== null) {
-        rangeRequest += ` AND atts_of_products.id_att = ${id_att} AND (atts_of_products.var_integer BETWEEN ${minValue} AND ${maxValue} OR atts_of_products.var_real BETWEEN ${minValue} AND ${maxValue})`;
-      } else if (minValue !== null) {
-        rangeRequest += ` AND atts_of_products.id_att = ${id_att} AND (atts_of_products.var_integer >= ${minValue} OR atts_of_products.var_real >= ${minValue})`;
-      } else if (maxValue !== null) {
-        rangeRequest += ` AND atts_of_products.id_att = ${id_att} AND (atts_of_products.var_integer <= ${maxValue} OR atts_of_products.var_real <= ${maxValue})`;
+      let condition = ` ${index === 0 ? 'AND' : 'OR'} atts_of_products.id_att = ${id_att}`;
+      if (
+        minValue !== null &&
+        minValue !== undefined &&
+        maxValue !== null &&
+        maxValue !== undefined
+      ) {
+        condition += ` AND (atts_of_products.var_integer BETWEEN ${minValue} AND ${maxValue} OR atts_of_products.var_real BETWEEN ${minValue} AND ${maxValue})`;
+      } else if (minValue !== null && minValue !== undefined) {
+        condition += ` AND (atts_of_products.var_integer >= ${minValue} OR atts_of_products.var_real >= ${minValue})`;
+      } else if (maxValue !== null && maxValue !== undefined) {
+        condition += ` AND (atts_of_products.var_integer <= ${maxValue} OR atts_of_products.var_real <= ${maxValue})`;
       }
-    });
-  
+      accumulator += condition;
+      return accumulator;
+    }, '');
+
+    console.log(rangeRequest);
+
     const productsData = await pool.query(
       `
       SELECT products.id_product, products.name, products.photo, 
@@ -78,13 +93,23 @@ export class ProductService {
     `,
       [`%${filter}%`],
     );
-  
+
+    //     console.log(`SELECT products.id_product, products.name, products.photo,
+    //     products.id_category, categories.name AS c_name,
+    //     atts.id_att, atts.name AS a_name, atts.type,
+    //     atts_of_products.var_integer, atts_of_products.var_boolean, atts_of_products.var_real
+    // FROM products
+    // JOIN atts_of_products ON products.id_product = atts_of_products.id_product
+    // JOIN atts ON atts_of_products.id_att = atts.id_att
+    // JOIN categories ON products.id_category = categories.id_category
+    // WHERE products.name ILIKE %${filter}% ${categoryRequest} ${searchAttrsRequest} ${rangeRequest}`)
+
     if (productsData.rows.length === 0) {
       throw new NotFoundException('Оборудование не найдено');
     }
-  
+
     const productsMap = {};
-  
+
     productsData.rows.forEach((row) => {
       if (!productsMap[row.id_product]) {
         productsMap[row.id_product] = {
@@ -98,7 +123,7 @@ export class ProductService {
           atts: [],
         };
       }
-  
+
       productsMap[row.id_product].atts.push({
         id: row.id_att,
         name: row.a_name,
@@ -108,13 +133,14 @@ export class ProductService {
         var_real: row.var_real,
       });
     });
-  
-    const productsArray = Object.values(productsMap);
-    console.log(productsArray);
-    return productsArray;
-  }
-  
 
+    const productsArray = Object.values(productsMap);
+    const productFilteredByAtts = productsArray.filter((product) => {
+      // @ts-ignore
+      return product.atts.length === ranges.length;
+    });
+    return productFilteredByAtts;
+  }
 
   //////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////

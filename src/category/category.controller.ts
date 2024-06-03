@@ -7,10 +7,11 @@ import {
   Get,
   Param,
 } from '@nestjs/common';
-import { CategoryService} from './category.service';
+import { CategoryService } from './category.service';
 
-interface Category {
+interface AddCategory {
   name: string;
+  id_atts: string[];
 }
 
 @Controller('category')
@@ -23,6 +24,13 @@ export class CategoryController {
     console.log(data);
     return data;
   }
+
+  @Get('/getAttsList')
+  async getAttsList() {
+    const data = await this.category.getAttsList();
+    console.log(data);
+    return data;
+  }
   @Get('/getCategoriesAtts/:id')
   async getCategoriesAtts(@Param('id') id) {
     console.log(id);
@@ -32,9 +40,9 @@ export class CategoryController {
     return data;
   }
   @Post('/addCategory')
-  async addCategory(@Body() category: Category) {
-    const { name } = category;
-    const data = await this.category.addCategory(name);
+  async addCategory(@Body() categoryInfo: AddCategory) {
+    const { name, id_atts } = categoryInfo;
+    const data = await this.category.addCategory(name, id_atts);
     console.log(data);
     return data;
   }

@@ -14,6 +14,12 @@ export class CategoryService {
     );
     return atts.rows;
   }
+  async addNewAtt(name, type) {
+    const att = await pool.query(
+      `INSERT INTO atts(name, type) VALUES ('${name}', '${type}') RETURNING id_att as id, name, type`,
+    );
+    return att.rows;
+  }
 
   async addCategory(name, id_atts) {
     if (name === undefined || name === '') {
@@ -23,8 +29,8 @@ export class CategoryService {
     const category = await pool.query(
       `INSERT INTO categories(name) VALUES ('${name}') RETURNING id_category`,
     );
-    console.log(id_atts)
-    console.log(id_atts.length)
+    console.log(id_atts);
+    console.log(id_atts.length);
     id_atts.forEach(async (attr) => {
       await pool.query(
         `INSERT INTO atts_of_categories(id_att,id_category) VALUES ('${attr}',${category.rows[0].id_category}) `,

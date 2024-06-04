@@ -14,6 +14,11 @@ interface AddCategory {
   id_atts: string;
 }
 
+interface AddNewAtt {
+  name: string;
+  type: "integer"|"real"|"boolean";
+}
+
 @Controller('category')
 export class CategoryController {
   constructor(private category: CategoryService) {}
@@ -43,6 +48,14 @@ export class CategoryController {
   async addCategory(@Body() categoryInfo: AddCategory) {
     const { name, id_atts } = categoryInfo;
     const data = await this.category.addCategory(name, JSON.parse(id_atts));
+    console.log(data);
+    return data;
+  }
+
+  @Post('/addNewAtt')
+  async addNewAtt(@Body() attInfo: AddNewAtt) {
+    const { name, type } = attInfo;
+    const data = await this.category.addNewAtt(name, type);
     console.log(data);
     return data;
   }

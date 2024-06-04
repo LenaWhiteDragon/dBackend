@@ -11,7 +11,7 @@ import { CategoryService } from './category.service';
 
 interface AddCategory {
   name: string;
-  id_atts: string[];
+  id_atts: string;
 }
 
 @Controller('category')
@@ -42,7 +42,7 @@ export class CategoryController {
   @Post('/addCategory')
   async addCategory(@Body() categoryInfo: AddCategory) {
     const { name, id_atts } = categoryInfo;
-    const data = await this.category.addCategory(name, id_atts);
+    const data = await this.category.addCategory(name, JSON.parse(id_atts));
     console.log(data);
     return data;
   }

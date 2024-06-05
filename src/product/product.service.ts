@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import pool from 'src/db';
-import { Product } from './product.controller';
+import { CreateProductRequest, Product } from './product.controller';
 
 @Injectable()
 export class ProductService {
@@ -38,7 +38,9 @@ export class ProductService {
     console.log(productObject);
     return productObject;
   }
-
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
   async getProductSearch(
     filter: string,
     c_id: number,
@@ -159,22 +161,38 @@ export class ProductService {
       VALUES ('${id_product}', '{${number}}', '${id_user}', to_timestamp(${Date.now()} / 1000.0))`,
     );
   }
-}
 
-/*
-    async createUser(email: string, password: string): Promise<Partial<users>> {
-      const hashedPassword = bcrypt.hashSync(password, 12);
-      return await this.userService.users.create({
-        data: {
-          uid: uuid4(),
-          email: email,
-          password: hashedPassword,
-        },
-        select: {
-          uid: true,
-          email: true,
-          nickname: true,
-        },
-      });
-    }
-    */
+  async createProduct({
+    name,
+    id_category,
+    atts_of_products,
+  }: CreateProductRequest) {
+    const responseProduct = await pool.query(
+      `INSERT INTO products(name, id_category, number)
+        VALUES ('${name}', '${id_category}', '{}')
+        RETURNING id_product
+        `,
+    );
+
+    atts_of_products.forEach(async (att) => {
+      const value = Object.values(att)[0];
+      const key = Object.keys(att)[0];
+      const idProduct = responseProduct.rows[0].id_product;
+
+      const typeOfAttr = await pool.query(
+        `SELECT type FROM atts WHERE id_att=${key}`,
+      );
+
+      if (typeof value === 'number' || typeof value === 'boolean') {
+        await pool.query(
+          `INSERT INTO atts_of_products(id_product, id_att, var_${typeOfAttr.rows[0].type})
+        VALUES ('${idProduct}', '${key}', '${value}')
+        RETURNING id_product
+        `,
+        );
+      }
+    });
+
+    return responseProduct.rows;
+  }
+}

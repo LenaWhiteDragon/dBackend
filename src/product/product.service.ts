@@ -166,10 +166,11 @@ export class ProductService {
     name,
     id_category,
     atts_of_products,
+    photo
   }: CreateProductRequest) {
     const responseProduct = await pool.query(
-      `INSERT INTO products(name, id_category, number)
-        VALUES ('${name}', '${id_category}', '{}')
+      `INSERT INTO products(name, id_category, number, photo)
+        VALUES ('${name}', '${id_category}', '{}', '${photo}')
         RETURNING id_product
         `,
     );

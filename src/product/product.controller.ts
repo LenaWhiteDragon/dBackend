@@ -22,6 +22,7 @@ export type AttOfProduct = { [key: string]: number | boolean };
 interface CreateProductBase {
   name: string;
   id_category: number;
+  photo?: string;
 }
 export interface CreateProductBody extends CreateProductBase {
   atts_of_products: string;
@@ -55,8 +56,6 @@ export class ProductController {
 
   @Get('/getProductById/:id')
   async getProductById(@Param('id') id) {
-    console.log(id);
-    console.log('Test2');
     const data = await this.productService.getProductById(id);
     console.log(data);
     return data;
@@ -64,7 +63,6 @@ export class ProductController {
 
   @Put('/orderProduct')
   async orderProduct(@Body() product: Product) {
-    console.log(product);
     const data = await this.productService.orderProduct(product);
     console.log(data);
     return data;
@@ -72,7 +70,6 @@ export class ProductController {
 
   @Post('/createProduct')
   async createProduct(@Body() product: CreateProductBody) {
-    console.log(product);
     const data = await this.productService.createProduct({
       ...product,
       atts_of_products: JSON.parse(product.atts_of_products),

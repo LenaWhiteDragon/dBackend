@@ -160,7 +160,25 @@ export class ProductService {
       `INSERT INTO orders(id_product, order_number, user_id, date) 
       VALUES ('${id_product}', '{${number}}', '${id_user}', to_timestamp(${Date.now()} / 1000.0))`,
     );
-  }
+  } 
+  async setProduct(product: Product) {
+    const { id_product, number} = product;
+    const numberProduct = await pool.query(
+      `SELECT number FROM products WHERE id_product=${id_product}`,
+    );
+    const countWhs = await pool.query(`SELECT COUNT(id_wh) FROM whs`);
+    let newNumber = number;
+    const newWhsAmount = countWhs.rows[0].count - newNumber.length; // if there are new whs then add zeros
+    if (newWhsAmount > 0) {
+      for (let i = 0; i <= newWhsAmount - 1; i++) newNumber.push(0);
+    }
+    const response = await pool.query(
+      `UPDATE products SET number='{${number}}' WHERE id_product=${id_product} RETURNING number`,
+    );
+    return response.rows[0]
+  } 
+
+
 
   async createProduct({
     name,

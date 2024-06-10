@@ -68,6 +68,13 @@ export class ProductController {
     return data;
   }
 
+  @Put('/setProduct')
+  async setProduct(@Body() product: Product) {
+    const data = await this.productService.setProduct(product);
+    console.log(data);
+    return data;
+  }
+
   @Post('/createProduct')
   async createProduct(@Body() product: CreateProductBody) {
     const data = await this.productService.createProduct({

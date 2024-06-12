@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpException,
-  UseGuards,
-  Get,
-  Query,
-  Param,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Post, Get, Query, Param, Put } from '@nestjs/common';
 import { ProductService } from './product.service';
 
 export interface Product {

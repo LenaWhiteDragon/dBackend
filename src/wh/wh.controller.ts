@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpException,
-  UseGuards,
-  Get,
-} from '@nestjs/common';
+import { Body, Controller, Post, Get } from '@nestjs/common';
 import { WhService } from './wh.service';
 
 interface WH {

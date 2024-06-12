@@ -47,7 +47,6 @@ export class CategoryService {
       AND categories.id_category =${id} 
       JOIN atts ON atts_of_categories.id_att = atts.id_att`);
 
-    const categories_new = categories.rows;
     const attributes = categories.rows.map((attr) => ({
       id: attr.id_att,
       name: attr.a_name,

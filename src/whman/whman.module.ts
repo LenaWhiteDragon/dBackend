@@ -1,19 +1,18 @@
-
-import { Module } from "@nestjs/common";
-import { WhmanController } from "./whman.controller";
-import { WhmanService } from "./whman.service";
-import { JwtModule } from "@nestjs/jwt";
+import { Module } from '@nestjs/common';
+import { WhmanController } from './whman.controller';
+import { WhmanService } from './whman.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [ 
+  imports: [
     JwtModule.register({
-    global: true,
-    secret: "121212",
-    signOptions: { expiresIn: '60s' },
-  }),
-  ], 
+      global: true,
+      secret: '121212',
+      signOptions: { expiresIn: '60s' },
+    }),
+  ],
   providers: [WhmanService],
-  controllers: [WhmanController], 
+  controllers: [WhmanController],
   exports: [WhmanService],
 })
-export class WhmanModule {} 
+export class WhmanModule {}

@@ -4,9 +4,7 @@ import { CreateProductRequest, Product } from './product.controller';
 
 @Injectable()
 export class ProductService {
-  // constructor(private jwtService: JwtService) {}
   async getProductById(id) {
-    // return [{id: 1, name: "комп леново"}, {id: 2, name: "мышка элджи"}, {id: 3, name: "монитор асер"}]
     const products =
       await pool.query(`SELECT products.id_product, products.name, products.photo, products.number, 
        products.id_category,categories.name as c_name,atts.id_att, atts.name as a_name,atts.type,atts_of_products.var_integer,
@@ -38,9 +36,7 @@ export class ProductService {
     console.log(productObject);
     return productObject;
   }
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   async getProductSearch(
     filter: string,
     c_id: number,
@@ -135,11 +131,6 @@ export class ProductService {
     return productFilteredByAtts;
   }
 
-  //////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////
   async orderProduct(product: Product) {
     const { id_product, number, id_user } = product;
     const numberProduct = await pool.query(
@@ -160,9 +151,9 @@ export class ProductService {
       `INSERT INTO orders(id_product, order_number, user_id, date) 
       VALUES ('${id_product}', '{${number}}', '${id_user}', to_timestamp(${Date.now()} / 1000.0))`,
     );
-  } 
+  }
   async setProduct(product: Product) {
-    const { id_product, number} = product;
+    const { id_product, number } = product;
     const numberProduct = await pool.query(
       `SELECT number FROM products WHERE id_product=${id_product}`,
     );
@@ -175,16 +166,14 @@ export class ProductService {
     const response = await pool.query(
       `UPDATE products SET number='{${number}}' WHERE id_product=${id_product} RETURNING number`,
     );
-    return response.rows[0]
-  } 
-
-
+    return response.rows[0];
+  }
 
   async createProduct({
     name,
     id_category,
     atts_of_products,
-    photo
+    photo,
   }: CreateProductRequest) {
     const responseProduct = await pool.query(
       `INSERT INTO products(name, id_category, number, photo)

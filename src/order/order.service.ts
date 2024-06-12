@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import pool from 'src/db';
-import { Order } from './order.controller';
 
 @Injectable()
 export class OrderService {

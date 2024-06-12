@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpException,
-  UseGuards,
-  Get,
-  Param,
-} from '@nestjs/common';
+import { Body, Controller, Post, Get, Param } from '@nestjs/common';
 import { CategoryService } from './category.service';
 
 interface AddCategory {
@@ -16,7 +8,7 @@ interface AddCategory {
 
 interface AddNewAtt {
   name: string;
-  type: "integer"|"real"|"boolean";
+  type: 'integer' | 'real' | 'boolean';
 }
 
 @Controller('category')
